@@ -8,14 +8,21 @@ export class Player {
   private yaw = 0;
   private pitch = 0;
 
-  private speed = 5;
+  private walkSpeed = 5;
   private sprintSpeed = 8;
   private sensitivity = 0.002;
+
+  private velocityY = 0;
+  private readonly gravity = 20;
+  private readonly jumpForce = 8;
+  private grounded = true;
+
+  private readonly eyeHeight = 2;
 
   constructor(camera: THREE.PerspectiveCamera) {
     this.camera = camera;
 
-    this.camera.position.set(0, 2, 8);
+    this.camera.position.set(0, this.eyeHeight, 8);
 
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
@@ -50,6 +57,24 @@ export class Player {
   };
 
   public update(delta: number) {
+    // Jump
+    if (this.keys["Space"] && this.grounded) {
+      this.velocityY = this.jumpForce;
+      this.grounded = false;
+    }
+
+    // Gravity
+    this.velocityY -= this.gravity * delta;
+    this.camera.position.y += this.velocityY * delta;
+
+    // Ground collision
+    if (this.camera.position.y <= this.eyeHeight) {
+      this.camera.position.y = this.eyeHeight;
+      this.velocityY = 0;
+      this.grounded = true;
+    }
+
+    // Horizontal movement
     const direction = new THREE.Vector3();
 
     if (this.keys["KeyW"]) direction.z -= 1;
@@ -65,14 +90,11 @@ export class Player {
         this.yaw
       );
 
-      const currentSpeed = this.keys["ShiftLeft"]
+      const speed = this.keys["ShiftLeft"]
         ? this.sprintSpeed
-        : this.speed;
+        : this.walkSpeed;
 
-      this.camera.position.addScaledVector(
-        direction,
-        currentSpeed * delta
-      );
+      this.camera.position.addScaledVector(direction, speed * delta);
     }
   }
 }
