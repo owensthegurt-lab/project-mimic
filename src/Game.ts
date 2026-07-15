@@ -1,9 +1,12 @@
 import * as THREE from "three";
+import { Player } from "./player/Player";
 
 export class Game {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
+  private clock: THREE.Clock;
+  private player: Player;
 
   constructor() {
     // Scene
@@ -18,15 +21,18 @@ export class Game {
       1000
     );
 
-    this.camera.position.set(0, 8, 18);
-    this.camera.lookAt(0, 0, 0);
-
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     document.body.style.margin = "0";
     document.body.appendChild(this.renderer.domElement);
+
+    // Clock
+    this.clock = new THREE.Clock();
+
+    // Player
+    this.player = new Player(this.camera);
 
     // Lighting
     const sun = new THREE.DirectionalLight(0xffffff, 2);
@@ -35,10 +41,7 @@ export class Game {
 
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-    // =====================
     // Ground
-    // =====================
-
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(200, 200),
       new THREE.MeshStandardMaterial({
@@ -47,12 +50,10 @@ export class Game {
     );
 
     ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // =====================
     // Road
-    // =====================
-
     const road = new THREE.Mesh(
       new THREE.BoxGeometry(8, 0.05, 200),
       new THREE.MeshStandardMaterial({
@@ -63,10 +64,7 @@ export class Game {
     road.position.y = 0.03;
     this.scene.add(road);
 
-    // =====================
     // Sidewalks
-    // =====================
-
     const sidewalkMaterial = new THREE.MeshStandardMaterial({
       color: 0x999999,
     });
@@ -83,10 +81,7 @@ export class Game {
     rightSidewalk.position.x = 5;
     this.scene.add(rightSidewalk);
 
-    // =====================
-    // Test House
-    // =====================
-
+    // House
     const house = new THREE.Mesh(
       new THREE.BoxGeometry(6, 4, 6),
       new THREE.MeshStandardMaterial({
@@ -97,6 +92,7 @@ export class Game {
     house.position.set(-15, 2, -20);
     this.scene.add(house);
 
+    // Roof
     const roof = new THREE.Mesh(
       new THREE.ConeGeometry(5, 2, 4),
       new THREE.MeshStandardMaterial({
@@ -108,7 +104,6 @@ export class Game {
     roof.position.set(-15, 5, -20);
     this.scene.add(roof);
 
-    // Resize
     window.addEventListener("resize", this.onResize);
 
     this.animate();
@@ -123,6 +118,10 @@ export class Game {
 
   private animate = () => {
     requestAnimationFrame(this.animate);
+
+    const delta = this.clock.getDelta();
+
+    this.player.update(delta);
 
     this.renderer.render(this.scene, this.camera);
   };
