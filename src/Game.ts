@@ -4,7 +4,6 @@ export class Game {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
-  private cube: THREE.Mesh;
 
   constructor() {
     // Scene
@@ -19,7 +18,7 @@ export class Game {
       1000
     );
 
-    this.camera.position.set(0, 5, 10);
+    this.camera.position.set(0, 8, 18);
     this.camera.lookAt(0, 0, 0);
 
     // Renderer
@@ -31,29 +30,85 @@ export class Game {
 
     // Lighting
     const sun = new THREE.DirectionalLight(0xffffff, 2);
-    sun.position.set(5, 10, 5);
-
+    sun.position.set(30, 40, 20);
     this.scene.add(sun);
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+    // =====================
     // Ground
+    // =====================
+
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100),
-      new THREE.MeshStandardMaterial({ color: 0x3b8f3b })
+      new THREE.PlaneGeometry(200, 200),
+      new THREE.MeshStandardMaterial({
+        color: 0x4b8b3b,
+      })
     );
 
     ground.rotation.x = -Math.PI / 2;
     this.scene.add(ground);
 
-    // Cube
-    this.cube = new THREE.Mesh(
-      new THREE.BoxGeometry(),
-      new THREE.MeshStandardMaterial({ color: 0xff4444 })
+    // =====================
+    // Road
+    // =====================
+
+    const road = new THREE.Mesh(
+      new THREE.BoxGeometry(8, 0.05, 200),
+      new THREE.MeshStandardMaterial({
+        color: 0x333333,
+      })
     );
 
-    this.cube.position.y = 0.5;
-    this.scene.add(this.cube);
+    road.position.y = 0.03;
+    this.scene.add(road);
 
+    // =====================
+    // Sidewalks
+    // =====================
+
+    const sidewalkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x999999,
+    });
+
+    const leftSidewalk = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 0.08, 200),
+      sidewalkMaterial
+    );
+
+    leftSidewalk.position.set(-5, 0.04, 0);
+    this.scene.add(leftSidewalk);
+
+    const rightSidewalk = leftSidewalk.clone();
+    rightSidewalk.position.x = 5;
+    this.scene.add(rightSidewalk);
+
+    // =====================
+    // Test House
+    // =====================
+
+    const house = new THREE.Mesh(
+      new THREE.BoxGeometry(6, 4, 6),
+      new THREE.MeshStandardMaterial({
+        color: 0xc29b68,
+      })
+    );
+
+    house.position.set(-15, 2, -20);
+    this.scene.add(house);
+
+    const roof = new THREE.Mesh(
+      new THREE.ConeGeometry(5, 2, 4),
+      new THREE.MeshStandardMaterial({
+        color: 0x8b2f2f,
+      })
+    );
+
+    roof.rotation.y = Math.PI / 4;
+    roof.position.set(-15, 5, -20);
+    this.scene.add(roof);
+
+    // Resize
     window.addEventListener("resize", this.onResize);
 
     this.animate();
@@ -68,8 +123,6 @@ export class Game {
 
   private animate = () => {
     requestAnimationFrame(this.animate);
-
-    this.cube.rotation.y += 0.01;
 
     this.renderer.render(this.scene, this.camera);
   };
